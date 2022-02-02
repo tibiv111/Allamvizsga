@@ -1,7 +1,7 @@
 {
-  "name": "react-chrome-extension",
+  "name": "vt-adblock-extension",
   "version": "1.0.0",
-  "description": "react chrome extension template",
+  "description": "Adblock extension by VT",
   "scripts": {
     "start": "webpack --watch --progress --config webpack.dev.js",
     "build": "webpack --watch --progress --config webpack.prod.js"

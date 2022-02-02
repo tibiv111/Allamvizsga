@@ -1,6 +1,6 @@
 {
-  "name": "React Extension",
-  "description": "Chrome Extension in React!",
+  "name": "VT-Adblock Extension",
+  "description": "Chrome Extension to block ads!",
   "version": "1.0.0",
   "manifest_version": 3,
   "icons": {

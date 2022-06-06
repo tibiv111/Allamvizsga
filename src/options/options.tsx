@@ -1,11 +1,10 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
-import './options.css'
+import './options.scss'
 
 const App: React.FC<{}> = () => {
   return (
     <div>
-      <img src="icon.png" />
     </div>
   )
 }

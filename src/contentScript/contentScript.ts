@@ -1,7 +1,7 @@
 const rules: {
   [url: string]: () => void
 } = {
-  'https://gamecopyworld.com/games/index.php': filterGameCopyWorld,
+  'https://gamecopyworld.com/games/index.php': filterGameCopyWorld
 }
 
 function filterNYTTechnology() {
@@ -9,18 +9,17 @@ function filterNYTTechnology() {
   const wrapper = document.getElementById('top-wrapper')
   app.removeChild(wrapper)
 }
-var result = [];
 
 async function adblock(){
   const apiUrl = 'https://raw.githubusercontent.com/anudeepND/blacklist/14e5970c8484781dfeb3137c7692ede89932a92b/adservers.txt';
   const response = await fetch(apiUrl)
   const data = await response.json();
   this.setState({ webUrls: data.total })
-  console.log(this.webUrls)
+  //console.log(this.webUrls)
 }
 
 async function filterGameCopyWorld() {
-  
+  //console.log("TEST")
   const divs = document.getElementsByTagName('div')
   const iframes = document.getElementsByTagName('iframe') //iframe-be menti a reklamot
   const as = document.getElementsByTagName('a')
@@ -34,7 +33,7 @@ async function filterGameCopyWorld() {
 
     const iframeIds= ['bs', 'sk', 'btm', 'bn']
     for(const iframe of iframes){
-      if(searchStringInArray(iframe.id, iframeIds) != -1)
+      if(searchStringInArray(iframe.id, iframeIds) !== -1)
       {
         iframe.style.display = 'none'
       }
@@ -47,7 +46,6 @@ async function filterGameCopyWorld() {
     //   }
     // }
     
-    
     if (
       div.style.display.indexOf('block') != -1 &&
       div.style.zIndex.indexOf('2147483647') != -1
@@ -57,13 +55,6 @@ async function filterGameCopyWorld() {
   }
 }
 
-
-if (document.URL in rules) {
-  console.log(document.URL)
-  rules[document.URL]()
-}
-
-
 function searchStringInArray (str, strArray) {
   for (var j=0; j<strArray.length; j++) {
       if (strArray[j].match(str)) return j;
@@ -72,16 +63,14 @@ function searchStringInArray (str, strArray) {
 }
 
 
-
-
+var result = [];
+//The ad servers arrive here:
 chrome.runtime.sendMessage({name: "getAdDomains"}, (response) => {
-  result = parseServers(response.word) 
-  console.log(result)
-
+  result = parseServers(response.word, false) //result has the formatted ad servers. False means we want css injection
 })
 
 
-function parseServers(responseString)
+function parseServers(responseString, requestBlock)
 {
     responseString = responseString.substring(responseString.indexOf("0.0.0.0 "));
     var responseArray = responseString.split(/\n/)
@@ -89,15 +78,29 @@ function parseServers(responseString)
     
     for (let i = 0; i < responseArray.length; i++)
     {
+      if(requestBlock){ //if we want to block the request API
         responseArray[i] = responseArray[i].replace("0.0.0.0 ", "*://*.");
         responseArray[i] = responseArray[i].concat("/*");
+      }else{ //if we want to block the css
+        responseArray[i] = responseArray[i].replace("0.0.0.0 ", "");
+      }
     }
-    
-    
     //TODO
     //
     return responseArray;
 }
+
+
+if (document.URL in rules) {
+  //console.log("URL: ")
+  //console.log(document.URL)
+  rules[document.URL]()
+}
+
+
+
+
+
 // document.addEventListener("DOMContentLoaded", function(){
 //   Array.from(
 //     document.querySelectorAll('div[role=row] > div[role="rowheader"] > span > a').values(),
@@ -123,3 +126,12 @@ function parseServers(responseString)
 //   },
 //   ["blocking"]
 // );
+
+
+
+
+
+// Ensures ads will be removed as the user scrolls
+// setInterval(function () {
+//   removeAds();
+// }, 100000)

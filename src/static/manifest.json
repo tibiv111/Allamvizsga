@@ -13,13 +13,21 @@
     "default_title": "React Extension",
     "default_icon": "icon.png"
   },
-  "permissions": ["storage", "declarativeNetRequest", "webRequest"],
+  "permissions": [
+    "storage",
+    "declarativeNetRequest"
+  ],
   "declarative_net_request": {
     "rule_resources": [
       {
         "id": "ruleset_1",
         "enabled": true,
         "path": "rules.json"
+      },
+      {
+        "id": "ruleset_2",
+        "enabled": true,
+        "path": "rules2.json"
       }
     ]
   },
@@ -29,8 +37,12 @@
   },
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["contentScript.js"]
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "contentScript.js"
+      ]
     }
   ]
 }

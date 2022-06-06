@@ -1,0 +1,15 @@
+[
+    {
+        "id": 42495,
+        "priority": 1,
+        "action": {
+            "type": "block"
+        },
+        "condition": {
+            "urlFilter": "ads.js",
+            "resourceTypes": [
+                "script"
+            ]
+        }
+    }
+]

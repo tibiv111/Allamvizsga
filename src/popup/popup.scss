@@ -1,0 +1,47 @@
+.base-dark {
+  --background-primary: #131315;
+  --background-secondary: #242425;
+  --background-error: rgba(255, 87, 111, 0.15);
+  --button-primary: #44bcd2;
+  --button-primary-overfull: rgba(68, 188, 210, 0.8);
+  --button-primary-overstroke: rgba(68, 188, 210, 0.1);
+  --button-toggle-on: #3fd19f;
+  --button-toggle-off: #8e8e93;
+  --icon-exception: #424244;
+  --icon-secondary: #131315;
+  --icon-primary: #8e8e93;
+  --icon-load: #424244;
+  --icon-hover: rgba(142, 142, 147, 0.3);
+  --text-exception: #131315;
+  --text-primary: #e5e5ea;
+  --text-secondary: #888886;
+  --text-universal: #8e8e93;
+  --text-error: #ff576f;
+  --separator-primary: #424244;
+  --separator-secondary: #242425;
+
+}
+
+body {
+  width: 44rem;
+  height: 31.25rem;
+  display: flex;
+  background-color: #242425;
+  padding: 1rem;
+  
+  .title{
+    color: white;
+    font-size: large;
+    display: flex;
+    padding-bottom: 1rem;
+    //justify-content: flex-start;
+
+  }
+  .content{
+    display: flex;
+    border-radius: 1rem;
+    background-color: #131315;
+    height: 10rem;
+    width: 10rem;
+  }
+}

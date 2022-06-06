@@ -18,13 +18,20 @@ module.exports = {
         exclude: /node_modules/,
       },
       {
-        test: /\.css$/i,
-        use: ['style-loader', 'css-loader'],
+        test: /\.s[ac]ss$/i,
+        use: [
+          // Creates `style` nodes from JS strings
+          "style-loader",
+          // Translates CSS into CommonJS
+          "css-loader",
+          // Compiles Sass to CSS
+          "sass-loader",
+        ],
       },
       {
         test: /\.(jpg|jpeg|png|woff|woff2|eot|ttf|svg)$/,
         type: 'asset/resource',
-      },
+      }
     ],
   },
   resolve: {
@@ -38,6 +45,14 @@ module.exports = {
       patterns: [
         {
           from: path.resolve('src/static'),
+          to: path.resolve('dist'),
+        },
+      ],
+    }),
+    new CopyPlugin({
+      patterns: [
+        {
+          from: path.resolve('src/lotties'),
           to: path.resolve('dist'),
         },
       ],

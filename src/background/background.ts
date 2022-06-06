@@ -1,14 +1,9 @@
 
-
-
-
-
 chrome.runtime.onMessage.addListener((msg, sender, response) =>{
+  //API call happens in background when "getAdDomains" message arrives, then sends back the result
   if(msg.name == "getAdDomains"){
     const apiCall = "https://raw.githubusercontent.com/anudeepND/blacklist/14e5970c8484781dfeb3137c7692ede89932a92b/adservers.txt"
-    console.log(apiCall)
     fetch(apiCall).then(function(res) {
-      console.log("TESZT")
       if(res.status !== 200){
         response({word: 'Error', desc: 'There was a problem loading the ad domains'})
         return;
@@ -17,7 +12,7 @@ chrome.runtime.onMessage.addListener((msg, sender, response) =>{
         response({word: data});
       });
     }).catch(function(err){
-      response({word: 'Error', desc: 'There was a problem loading the ad domains'})
+      response({word: 'Error: ' + err, desc: 'There was a problem loading the ad domains'})
     });
 
   }

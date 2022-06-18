@@ -3,6 +3,8 @@ const CopyPlugin = require('copy-webpack-plugin')
 const HtmlPlugin = require('html-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 
+var webpack = require("webpack");
+
 module.exports = {
   entry: {
     popup: path.resolve('src/popup/popup.tsx'),
@@ -38,6 +40,10 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   plugins: [
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      jQuery: "jquery"
+    }),
     new CleanWebpackPlugin({
       cleanStaleWebpackAssets: false,
     }),
@@ -49,6 +55,14 @@ module.exports = {
         },
       ],
     }),
+    // new CopyPlugin({
+    //   patterns: [
+    //     {
+    //       from: path.resolve('src/dialog'),
+    //       to: path.resolve('dist'),
+    //     },
+    //   ],
+    // }),
     new CopyPlugin({
       patterns: [
         {

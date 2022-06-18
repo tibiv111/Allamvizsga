@@ -1,4 +1,3 @@
-
 chrome.runtime.onMessage.addListener((msg, sender, response) =>{
   //API call happens in background when "getAdDomains" message arrives, then sends back the result
   if(msg.name == "getAdDomains"){
@@ -10,15 +9,16 @@ chrome.runtime.onMessage.addListener((msg, sender, response) =>{
       }
       res.text().then(function(data){
         response({word: data});
+        return true;
       });
     }).catch(function(err){
       response({word: 'Error: ' + err, desc: 'There was a problem loading the ad domains'})
     });
-
   }
-  return true;
+      return true
 })
 
+chrome.storage.local.set({"isDOMSelectorActive": false})
 
 
 // chrome.runtime.onUpdateAvailable.addListener(function() {

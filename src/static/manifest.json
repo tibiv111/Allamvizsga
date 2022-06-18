@@ -15,7 +15,9 @@
   },
   "permissions": [
     "storage",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "tabs",
+    "background"
   ],
   "declarative_net_request": {
     "rule_resources": [

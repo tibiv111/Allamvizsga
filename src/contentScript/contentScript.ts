@@ -1,36 +1,24 @@
-const rules: {
+//LOCAL VARIABLES
+import "./content.scss"
+
+var rules: {
   [url: string]: () => void
-} = {
-  'https://gamecopyworld.com/games/index.php': filterGameCopyWorld
-}
+};
+var resultForRequests = [];
+var resultsForCSS = [];
 
-function filterNYTTechnology() {
-  const app = document.getElementById('site-content')
-  const wrapper = document.getElementById('top-wrapper')
-  app.removeChild(wrapper)
-}
 
-async function adblock(){
-  const apiUrl = 'https://raw.githubusercontent.com/anudeepND/blacklist/14e5970c8484781dfeb3137c7692ede89932a92b/adservers.txt';
-  const response = await fetch(apiUrl)
-  const data = await response.json();
-  this.setState({ webUrls: data.total })
-  //console.log(this.webUrls)
-}
 
 async function filterGameCopyWorld() {
-  //console.log("TEST")
   const divs = document.getElementsByTagName('div')
   const iframes = document.getElementsByTagName('iframe') //iframe-be menti a reklamot
   const as = document.getElementsByTagName('a')
-
   
   for (const div of divs) {
     if (div.className === 'chk') {
       div.style.display = 'none'
     }
     
-
     const iframeIds= ['bs', 'sk', 'btm', 'bn']
     for(const iframe of iframes){
       if(searchStringInArray(iframe.id, iframeIds) !== -1)
@@ -55,6 +43,47 @@ async function filterGameCopyWorld() {
   }
 }
 
+async function adblockCSS(){
+  //removeImages() //not working perfectly yet.
+  removeLinks()
+}
+
+function removeImages(){
+  var images = document.getElementsByTagName('img');
+  for (var i = 0, l = images.length; i < l; i++) {
+    if(images[i].src != null){
+      for(var j = 0, max = resultsForCSS.length; j < max; j++){
+        //console.log(resultsForCSS[j])
+        if(resultsForCSS[j] != null){
+          if(images[i].src.toString().includes(resultsForCSS[j].toString())){
+            images[i].style.display = "none"
+            //console.table(resultsForCSS[j])
+            break
+          }
+        }
+      }
+    }
+  }
+}
+
+function removeLinks(){
+  var links = document.getElementsByTagName('link')
+  for (var i = 0, l = links.length; i < l; i++) {
+    if(links[i].href != null){
+      for(var j = 0, max = resultsForCSS.length; j < max; j++){
+        //console.log(resultsForCSS[j])
+        if(resultsForCSS[j] != null){
+          if(links[i].href.toString().includes(resultsForCSS[j].toString())){
+            links[i].style.display = "none"
+            //console.table(resultsForCSS[j])
+            break
+          }
+        }
+      }
+    }
+  }
+}
+
 function searchStringInArray (str, strArray) {
   for (var j=0; j<strArray.length; j++) {
       if (strArray[j].match(str)) return j;
@@ -63,14 +92,15 @@ function searchStringInArray (str, strArray) {
 }
 
 
-var result = [];
-//The ad servers arrive here:
-chrome.runtime.sendMessage({name: "getAdDomains"}, (response) => {
-  result = parseServers(response.word, false) //result has the formatted ad servers. False means we want css injection
-})
+function setRulesForCSS(){
+  rules = {
+    'gamecopyworld.com': filterGameCopyWorld,
+    'StandardAdblock': adblockCSS
+    };
+}
 
 
-function parseServers(responseString, requestBlock)
+function parseServers(responseString, isRequestBlock)
 {
     responseString = responseString.substring(responseString.indexOf("0.0.0.0 "));
     var responseArray = responseString.split(/\n/)
@@ -78,60 +108,85 @@ function parseServers(responseString, requestBlock)
     
     for (let i = 0; i < responseArray.length; i++)
     {
-      if(requestBlock){ //if we want to block the request API
+      if(isRequestBlock){ //if we want to block the request API
         responseArray[i] = responseArray[i].replace("0.0.0.0 ", "*://*.");
         responseArray[i] = responseArray[i].concat("/*");
       }else{ //if we want to block the css
         responseArray[i] = responseArray[i].replace("0.0.0.0 ", "");
       }
     }
-    //TODO
-    //
     return responseArray;
 }
 
 
-if (document.URL in rules) {
-  //console.log("URL: ")
-  //console.log(document.URL)
-  rules[document.URL]()
+
+
+//The ad servers arrive here:
+chrome.runtime.sendMessage({name: "getAdDomains"}, (response) => {
+  resultForRequests = parseServers(response.word, true); //result has the formatted ad servers. False means we want css injection
+  resultsForCSS = parseServers(response.word, false);
+  setRulesForCSS();
+  var isRealRule = false;
+
+  for(const rule in rules){
+    if (document.URL.toString().includes(rule)) {
+      isRealRule = true;
+      rules[rule]()
+      break;
+    }
+  }
+  if(!isRealRule){
+    rules['StandardAdblock']()
+  }
+  
+})
+
+//When the user clicks on the "Block element" button on the popup page the DOMSelector activates / deactivates
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if( request.message === "DOMSelectorControl" ) {
+      if(request.command == 'turnOff'){
+        deactivateDOMSelector()
+      }
+      else{
+        DOMSelectorControl();
+      }
+      
+    }
+  }
+);
+
+//If the DOMSelector is activated on hover we highlight the DOM elements and on click we hide it.
+function DOMSelectorControl(){
+  //search for element
+  jQuery(window).on('mouseover mouseout click',function(e) {
+      var x = e.clientX, y = e.clientY,
+          elementMouseIsOver = document.elementFromPoint(x, y);
+          var element = <HTMLElement>elementMouseIsOver
+          //styling on hovered element
+          $(element).on('mouseover mouseout', function(e){
+            $(e.target).toggleClass('hovered', e.type === 'mouseover');
+            e.stopPropagation();
+          })
+          //hide element on click and disable hover styling
+          $(element).on('click', function(e) {
+            $(e.target).css("display", "none")
+            $(e.target).unbind('mouseover mouseout click')
+            $(element).unbind('mouseover mouseout click')
+            jQuery(window).off('mouseover mouseout click')
+            $(document).off().find("*").off();
+            $("body").find("*").each(function() {
+              $(this).off("mouseover mouseout click");
+          });
+            e.stopPropagation();
+          })
+          
+    });
 }
 
-
-
-
-
-// document.addEventListener("DOMContentLoaded", function(){
-//   Array.from(
-//     document.querySelectorAll('div[role=row] > div[role="rowheader"] > span > a').values(),
-//   ).map(
-//     async (parentElement) => {
-//         const title = parentElement.getAttribute('title')
-//         const href = parentElement.getAttribute('href')
-//         const codeTourUrl = href.replace('blob', 'raw')
-
-//         // Now forward request will behave like fetch
-//         const content = await forwardRequest({ url: codeTourUrl })
-//         console.log(title, content)
-// })
-// })
-
-
-// chrome.webRequest.onBeforeRequest.addListener(
-//   function() {
-//       return {cancel: true};
-//   },
-//   {
-//       urls: result
-//   },
-//   ["blocking"]
-// );
-
-
-
-
-
-// Ensures ads will be removed as the user scrolls
-// setInterval(function () {
-//   removeAds();
-// }, 100000)
+function deactivateDOMSelector(){
+  $(document).off().find("*").off();
+  $("body").find("*").each(function() {
+    $(this).off("mouseover mouseout click");
+});
+}

@@ -123,20 +123,23 @@ function parseServers(responseString, isRequestBlock)
 
 //The ad servers arrive here:
 chrome.runtime.sendMessage({name: "getAdDomains"}, (response) => {
-  resultForRequests = parseServers(response.word, true); //result has the formatted ad servers. False means we want css injection
-  resultsForCSS = parseServers(response.word, false);
-  setRulesForCSS();
-  var isRealRule = false;
 
-  for(const rule in rules){
-    if (document.URL.toString().includes(rule)) {
-      isRealRule = true;
-      rules[rule]()
-      break;
+  if(response.status == 200){
+    resultForRequests = parseServers(response.message, true); //result has the formatted ad servers. False means we want css injection
+    resultsForCSS = parseServers(response.message, false);
+    setRulesForCSS();
+    var isRealRule = false;
+  
+    for(const rule in rules){
+      if (document.URL.toString().includes(rule)) {
+        isRealRule = true;
+        rules[rule]()
+        break;
+      }
     }
-  }
-  if(!isRealRule){
-    rules['StandardAdblock']()
+    if(!isRealRule){
+      rules['StandardAdblock']()
+    }
   }
   
 })
@@ -156,21 +159,41 @@ chrome.runtime.onMessage.addListener(
   }
 );
 
+
+
 //If the DOMSelector is activated on hover we highlight the DOM elements and on click we hide it.
 function DOMSelectorControl(){
   //search for element
+
   jQuery(window).on('mouseover mouseout click',function(e) {
+    var selectedHTMLElement;
+    var wasSelected = false;
       var x = e.clientX, y = e.clientY,
           elementMouseIsOver = document.elementFromPoint(x, y);
           var element = <HTMLElement>elementMouseIsOver
           //styling on hovered element
           $(element).on('mouseover mouseout', function(e){
+            if(!wasSelected){
+              selectedHTMLElement = e.target;
+              wasSelected = true;
+            }
+            
             $(e.target).toggleClass('hovered', e.type === 'mouseover');
             e.stopPropagation();
           })
           //hide element on click and disable hover styling
           $(element).on('click', function(e) {
             $(e.target).css("display", "none")
+
+            chrome.storage.sync.get('blockedHTMLElements', function(data){ 
+              var setOfBlacklistedElements = new Set(data.blockedHTMLElements);
+              
+              var dataSet = {"blockedElementTag": e.target.tagName, "blockedElementClass": e.target.className, "blockedElementParentClass": e.target.parentElement.className, "blockedElementId": e.target.id, "blockedElementParentId": e.target.parentElement.id}
+              setOfBlacklistedElements.add({"url": document.URL.toString().split('/')[2], "elementData" : selectedHTMLElement.outerHTML})
+              chrome.storage.sync.set({ 'blockedHTMLElements': [...setOfBlacklistedElements] });
+              //console.log(setOfBlacklistedElements)
+              
+            })
             $(e.target).unbind('mouseover mouseout click')
             $(element).unbind('mouseover mouseout click')
             jQuery(window).off('mouseover mouseout click')
@@ -189,4 +212,90 @@ function deactivateDOMSelector(){
   $("body").find("*").each(function() {
     $(this).off("mouseover mouseout click");
 });
+}
+
+
+
+chrome.storage.sync.get('blockedHTMLElements', function(data){ 
+  var setOfBlacklistedElements = new Set(data.blockedHTMLElements);
+  for (var item of Array.from(setOfBlacklistedElements.values())) {
+    if(document.URL.toString().includes(item['url'])){
+      //const currentElement = item["elementData"]
+      const currentElement = item["elementData"].replace(' hovered" style="display: none;', "");
+      if(currentElement != null){
+        if(searchElement(currentElement)){
+          console.log("True")
+        }
+        
+        
+        // if(currentElement['blockedElementId'] != null){
+        //   document.getElementById(currentElement['blockedElementId'])
+        // }
+        // else{
+        //   if(currentElement['blockedElementClass'] != null){
+        //     const classes = document.getElementsByClassName(currentElement['blockedElementClass'])
+        //     for(const newItem of classes){
+        //       if(newItem.parentElement.id == )
+        //     }
+            
+        //   }
+        // }
+
+        // }
+        // console.log(currentElement['blockedElementTag'])
+
+        
+        // console.log(currentElement['blockedElementParentClass'])
+        // console.log(currentElement['blockedElementId'])
+      }
+      
+      //"blockedElementTag": e.target.tagName, "blockedElementClass": e.target.className, "blockedElementParentClass": e.target.parentElement.className, "blockedElementId": e.target.id
+    }
+    
+  }
+  
+})
+
+function searchElement(elementhtml){
+  
+  
+  var currElement = elementhtml.split(";").slice(-1)[0];
+  const tag = currElement.split(" ")[0].substring(1)
+  currElement = currElement.split("/"+tag)[0]+"/"+tag+">"
+  
+  jQuery(document).ready(function(){
+    //console.log(createElementFromHTML(currElement))
+    console.log(document.body.querySelectorAll(tag).values())
+    $('span IqJTee').empty();
+    //console.log($('span IqJTee'))
+  })
+  
+  //console.log(jQuery.data(createElementFromHTML(currElement)))
+  //document.body.appendChild(createElementFromHTML(elementhtml))
+  // const myClass = currElement.split('class="')[1].split('"')[0];
+
+  // const elements = document.querySelector(myClass);
+  // console.log(elements)
+
+  // document.querySelectorAll(tag).forEach(element =>{
+  //   console.log(element)
+  //   if(element.outerHTML.toString().includes(currElement) ){
+  //     console.log(element.outerHTML)
+  //     $(element).css("display", "none")
+  //     return true
+  //   }else{
+  //     //console.log(element)
+  //   }
+  // })
+  return false
+  
+  
+ }
+
+ function createElementFromHTML(htmlString) {
+  var div = document.createElement('div');
+  div.innerHTML = htmlString.trim();
+
+  // Change this to div.childNodes to support multiple top-level nodes.
+  return div.firstChild;
 }

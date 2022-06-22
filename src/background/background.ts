@@ -4,21 +4,33 @@ chrome.runtime.onMessage.addListener((msg, sender, response) =>{
     const apiCall = "https://raw.githubusercontent.com/anudeepND/blacklist/14e5970c8484781dfeb3137c7692ede89932a92b/adservers.txt"
     fetch(apiCall).then(function(res) {
       if(res.status !== 200){
-        response({word: 'Error', desc: 'There was a problem loading the ad domains'})
+        response({message: "There was a problem loading the ad domains" , status: res.status})
         return;
       }
       res.text().then(function(data){
-        response({word: data});
+        response({message: data, status: res.status});
         return true;
       });
     }).catch(function(err){
-      response({word: 'Error: ' + err, desc: 'There was a problem loading the ad domains'})
+      response({message: 'Error: ' + err, desc: 'There was a problem loading the ad domains'})
     });
   }
       return true
 })
 
-chrome.storage.local.set({"isDOMSelectorActive": false})
+chrome.storage.sync.set({"isDOMSelectorActive": false})
+
+
+chrome.storage.sync.get('blockedHTMLElements', function(data){
+  if(data.blockedHTMLElements === null){
+    var blockedHTMLElementsSet = new Set();
+    chrome.storage.sync.set({ 'blockedHTMLElements': [...blockedHTMLElementsSet] });
+  }
+})
+
+
+
+
 
 
 // chrome.runtime.onUpdateAvailable.addListener(function() {

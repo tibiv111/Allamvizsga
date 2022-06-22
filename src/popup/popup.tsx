@@ -11,6 +11,10 @@ const App: React.FC<{}> = () => {
           <button onClick={activateDOMSelector}>
             Block Element
           </button>
+          <button onClick={clearLocalStorage}>
+            Clear local storage
+          </button>
+
         </div>
       </div>
   )
@@ -34,7 +38,9 @@ function activateDOMSelector(){
  isDOMSelectorActive = !isDOMSelectorActive;
 }
 
-
+function clearLocalStorage(){
+  chrome.storage.sync.clear()
+}
 
 
 const root = document.createElement('div')

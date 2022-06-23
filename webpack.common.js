@@ -33,6 +33,12 @@ module.exports = {
       {
         test: /\.(jpg|jpeg|png|woff|woff2|eot|ttf|svg)$/,
         type: 'asset/resource',
+      },
+      {
+        type: 'javascript/auto',
+        test: /\.json$/,
+        include: /(lottie)/,
+        loader: 'lottie-web-webpack-loader',
       }
     ],
   },

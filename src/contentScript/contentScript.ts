@@ -150,15 +150,24 @@ chrome.runtime.onMessage.addListener(
     if( request.message === "DOMSelectorControl" ) {
       if(request.command == 'turnOff'){
         deactivateDOMSelector()
+        isEditing = false;
       }
       else{
         DOMSelectorControl();
+        isEditing = true;
       }
       
     }
   }
 );
-
+var isEditing = false;
+window.addEventListener("beforeunload", event => {
+  console.log(isEditing)
+  if (!isEditing) return
+  event.preventDefault()
+  // Chrome requires returnValue to be set.
+  event.returnValue = ""
+})
 
 
 //If the DOMSelector is activated on hover we highlight the DOM elements and on click we hide it.
@@ -166,6 +175,7 @@ function DOMSelectorControl(){
   //search for element
 
   jQuery(window).on('mouseover mouseout click',function(e) {
+    isEditing = false;
     var selectedHTMLElement;
     var wasSelected = false;
       var x = e.clientX, y = e.clientY,
@@ -221,33 +231,33 @@ chrome.storage.sync.get('blockedHTMLElements', function(data){
   for (var item of Array.from(setOfBlacklistedElements.values())) {
     if(document.URL.toString().includes(item['url'])){
       //const currentElement = item["elementData"]
-      const currentElement = item["elementData"].replace(' hovered" style="display: none;', "");
-      if(currentElement != null){
-        if(searchElement(currentElement)){
-          console.log("True")
-        }
+      // const currentElement = item["elementData"].replace(' hovered" style="display: none;', "");
+      // if(currentElement != null){
+      //   if(searchElement(currentElement)){
+      //     console.log("True")
+      //   }
         
         
-        // if(currentElement['blockedElementId'] != null){
-        //   document.getElementById(currentElement['blockedElementId'])
-        // }
-        // else{
-        //   if(currentElement['blockedElementClass'] != null){
-        //     const classes = document.getElementsByClassName(currentElement['blockedElementClass'])
-        //     for(const newItem of classes){
-        //       if(newItem.parentElement.id == )
-        //     }
+      //   // if(currentElement['blockedElementId'] != null){
+      //   //   document.getElementById(currentElement['blockedElementId'])
+      //   // }
+      //   // else{
+      //   //   if(currentElement['blockedElementClass'] != null){
+      //   //     const classes = document.getElementsByClassName(currentElement['blockedElementClass'])
+      //   //     for(const newItem of classes){
+      //   //       if(newItem.parentElement.id == )
+      //   //     }
             
-        //   }
-        // }
+      //   //   }
+      //   // }
 
-        // }
-        // console.log(currentElement['blockedElementTag'])
+      //   // }
+      //   // console.log(currentElement['blockedElementTag'])
 
         
-        // console.log(currentElement['blockedElementParentClass'])
-        // console.log(currentElement['blockedElementId'])
-      }
+      //   // console.log(currentElement['blockedElementParentClass'])
+      //   // console.log(currentElement['blockedElementId'])
+      // }
       
       //"blockedElementTag": e.target.tagName, "blockedElementClass": e.target.className, "blockedElementParentClass": e.target.parentElement.className, "blockedElementId": e.target.id
     }

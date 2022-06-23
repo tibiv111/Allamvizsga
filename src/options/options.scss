@@ -1,3 +1,103 @@
 body {
-  background-color: #1c1c1c;
+  background-color: black;
+  color: white;
+  .options-container{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    .title{
+      color: white;
+      font-size: large;
+      display: flex;
+      justify-content: right;
+      padding-bottom: 1rem;
+      padding-top: 1rem;
+      align-items: flex-end;
+      //justify-content: flex-start;
+    }
+    .content{
+      .subTitle{
+        color: white;
+        font-size: 28px;
+        padding: 1rem;
+        font-style: bold;
+      }
+      .separator{
+        display: flex;
+        flex-direction: row;
+
+        .menu-options{
+          
+          .list-item{
+            margin-bottom: 1rem;
+            .button-64 {
+              margin-bottom: 1rem;
+              width: 22rem;
+              align-items: center;
+              background-image: linear-gradient(144deg,#AF40FF, #5B42F3 50%,#00DDEB);
+              border: 0;
+              border-radius: 8px;
+              box-shadow: rgba(151, 65, 252, 0.2) 0 15px 30px -5px;
+              box-sizing: border-box;
+              color: #FFFFFF;
+              display: flex;
+              font-family: Phantomsans, sans-serif;
+              font-size: 20;
+              justify-content: center;
+              line-height: 1em;
+              max-width: 100%;
+              padding: 3px;
+              text-decoration: none;
+              user-select: none;
+              -webkit-user-select: none;
+              touch-action: manipulation;
+              white-space: nowrap;
+              cursor: pointer;
+            }
+          
+            .button-64:active,
+            .button-64:hover {
+              outline: 0;
+            }
+          
+            .button-64 span {
+              display: flex;
+              align-items: center;
+              justify-content: flex-start;
+              background-color: rgb(5, 6, 45);
+              padding: 8px 12px;
+              border-radius: 6px;
+              width: 100%;
+              height: 100%;
+              transition: 300ms;
+              img{
+                align-self: flex-start;
+                margin-right: 1rem;
+              }
+             
+            }
+          
+            .button-64:hover span {
+              background: none;
+            }
+          
+            @media (min-width: 768px) {
+              .button-64 {
+                font-size: 24px;
+                min-width: 196px;
+              }
+            }
+          }
+        }
+      }
+      .data-container{
+        padding: 0rem 0rem 2rem 2rem;
+        .data{
+          font-size: 20px;
+        }
+      }
+    
+      
+    }
+  }
 }

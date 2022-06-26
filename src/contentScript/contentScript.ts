@@ -26,14 +26,7 @@ async function filterGameCopyWorld() {
         iframe.style.display = 'none'
       }
     }
-
-    // for(const a of as){
-    //   if(a.href)
-    //   {
-    //     a.style.display = 'none'
-    //   }
-    // }
-    
+   
     if (
       div.style.display.indexOf('block') != -1 &&
       div.style.zIndex.indexOf('2147483647') != -1
@@ -46,6 +39,7 @@ async function filterGameCopyWorld() {
 async function adblockCSS(){
   //removeImages() //not working perfectly yet.
   removeLinks()
+  //removeElements()
 }
 
 function removeImages(){
@@ -75,6 +69,24 @@ function removeLinks(){
         if(resultsForCSS[j] != null){
           if(links[i].href.toString().includes(resultsForCSS[j].toString())){
             links[i].style.display = "none"
+            //console.table(resultsForCSS[j])
+            break
+          }
+        }
+      }
+    }
+  }
+}
+
+function removeElements(){
+  var a = document.getElementsByTagName('a')
+  for (var i = 0, l = a.length; i < l; i++) {
+    if(a[i].href != null){
+      for(var j = 0, max = resultsForCSS.length; j < max; j++){
+        //console.log(resultsForCSS[j])
+        if(resultsForCSS[j] != null){
+          if(a[i].href.toString().includes(resultsForCSS[j].toString())){
+            a[i].style.display = "none"
             //console.table(resultsForCSS[j])
             break
           }
@@ -173,8 +185,11 @@ window.addEventListener("beforeunload", event => {
 //If the DOMSelector is activated on hover we highlight the DOM elements and on click we hide it.
 function DOMSelectorControl(){
   //search for element
+  var actualHref = undefined;
+  var actualParentHref = undefined;
 
   jQuery(window).on('mouseover mouseout click',function(e) {
+
     isEditing = false;
     var selectedHTMLElement;
     var wasSelected = false;
@@ -187,21 +202,42 @@ function DOMSelectorControl(){
               selectedHTMLElement = e.target;
               wasSelected = true;
             }
-            
-            $(e.target).toggleClass('hovered', e.type === 'mouseover');
             e.stopPropagation();
+            $(e.target).toggleClass('hovered', e.type === 'mouseover');
+            
           })
           //hide element on click and disable hover styling
           $(element).on('click', function(e) {
-            $(e.target).css("display", "none")
-
+            e.stopPropagation();
+            var newElement = e.target
+            newElement.className = e.target.className.replace(' hovered', " removedElementDetected");
+            try{
+              var root = newElement.attachShadow({mode: 'open'})
+            }catch(k){
+              root.removeChild(e.target)
+            }
+            var targetTrace = [root, element];
+            var currentElem = element;
+            //console.log(element)
+            var p = 0;
+            while(!currentElem.isEqualNode(document.body))
+            {
+              currentElem = currentElem.parentElement;
+              targetTrace.push(currentElem)
+              console.log(currentElem)            
+              
+            }
+            // while(currentElem.isEqualNode(document.body)){
+            //   currentElem = e.target
+            //   console.log($(currentElem))
+            //   targetTrace.push(currentElem)
+            // }
+            
             chrome.storage.sync.get('blockedHTMLElements', function(data){ 
               var setOfBlacklistedElements = new Set(data.blockedHTMLElements);
-              
               var dataSet = {"blockedElementTag": e.target.tagName, "blockedElementClass": e.target.className, "blockedElementParentClass": e.target.parentElement.className, "blockedElementId": e.target.id, "blockedElementParentId": e.target.parentElement.id}
-              setOfBlacklistedElements.add({"url": document.URL.toString().split('/')[2], "elementData" : selectedHTMLElement.outerHTML})
+              setOfBlacklistedElements.add({"url": document.URL.toString().split('/')[2], "elementData" : e.target.parentElement.innerHTML, "rootData": targetTrace})
               chrome.storage.sync.set({ 'blockedHTMLElements': [...setOfBlacklistedElements] });
-              //console.log(setOfBlacklistedElements)
               
             })
             $(e.target).unbind('mouseover mouseout click')
@@ -216,7 +252,7 @@ function DOMSelectorControl(){
           
     });
 }
-
+//deactivate DOM selector using jQuery
 function deactivateDOMSelector(){
   $(document).off().find("*").off();
   $("body").find("*").each(function() {
@@ -225,80 +261,91 @@ function deactivateDOMSelector(){
 }
 
 
-
+//Upon reload remove already blocked elements
 chrome.storage.sync.get('blockedHTMLElements', function(data){ 
   var setOfBlacklistedElements = new Set(data.blockedHTMLElements);
   for (var item of Array.from(setOfBlacklistedElements.values())) {
     if(document.URL.toString().includes(item['url'])){
-      //const currentElement = item["elementData"]
-      // const currentElement = item["elementData"].replace(' hovered" style="display: none;', "");
-      // if(currentElement != null){
-      //   if(searchElement(currentElement)){
-      //     console.log("True")
-      //   }
-        
-        
-      //   // if(currentElement['blockedElementId'] != null){
-      //   //   document.getElementById(currentElement['blockedElementId'])
-      //   // }
-      //   // else{
-      //   //   if(currentElement['blockedElementClass'] != null){
-      //   //     const classes = document.getElementsByClassName(currentElement['blockedElementClass'])
-      //   //     for(const newItem of classes){
-      //   //       if(newItem.parentElement.id == )
-      //   //     }
-            
-      //   //   }
-      //   // }
-
-      //   // }
-      //   // console.log(currentElement['blockedElementTag'])
-
-        
-      //   // console.log(currentElement['blockedElementParentClass'])
-      //   // console.log(currentElement['blockedElementId'])
-      // }
-      
-      //"blockedElementTag": e.target.tagName, "blockedElementClass": e.target.className, "blockedElementParentClass": e.target.parentElement.className, "blockedElementId": e.target.id
+      const currentElement = item["elementData"]
+      const rootData : (HTMLElement | ShadowRoot)[] = item['rootData']      
+      if(currentElement != null){
+        if(searchElement(currentElement, rootData)){
+          console.log("True")
+        }
+      }
     }
-    
   }
-  
 })
 
-function searchElement(elementhtml){
-  
-  
-  var currElement = elementhtml.split(";").slice(-1)[0];
-  const tag = currElement.split(" ")[0].substring(1)
-  currElement = currElement.split("/"+tag)[0]+"/"+tag+">"
-  
-  jQuery(document).ready(function(){
-    //console.log(createElementFromHTML(currElement))
-    console.log(document.body.querySelectorAll(tag).values())
-    $('span IqJTee').empty();
-    //console.log($('span IqJTee'))
-  })
-  
-  //console.log(jQuery.data(createElementFromHTML(currElement)))
-  //document.body.appendChild(createElementFromHTML(elementhtml))
-  // const myClass = currElement.split('class="')[1].split('"')[0];
+//DFS for structuring nodes
+function deepFirstSearch(node, nodeList, ItemTrace, currentIndex) {  
+  if(ItemTrace.length <= currentIndex+1)
+  {
+    return nodeList;
+  }
+  if (node) {    
+      nodeList.push(node);    
+      var children = node.children;
+      for (var i = 0; i < children.length; i++) 
+      {
+        if(children[i].isEqualNode(ItemTrace[currentIndex])){
+          deepFirstSearch(children[i],nodeList, ItemTrace, currentIndex+1);   
 
-  // const elements = document.querySelector(myClass);
-  // console.log(elements)
+        }
+         
+      }
 
-  // document.querySelectorAll(tag).forEach(element =>{
-  //   console.log(element)
-  //   if(element.outerHTML.toString().includes(currElement) ){
-  //     console.log(element.outerHTML)
-  //     $(element).css("display", "none")
-  //     return true
-  //   }else{
-  //     //console.log(element)
-  //   }
-  // })
+      
+      //Each recursion passes down the traversed nodes and the array stored by the nodes
+      
+  }    
+  return nodeList;  
+} 
+
+
+function depthFirstSearch(node, searchedItem) {
+  var nodes = [];
+  if (node != null) {
+      var stack = [];
+      stack.push(node);
+      while (stack.length != 0) {
+        var item = stack.pop();
+        nodes.push(item);
+        var children = item.children;
+          for (var i = children.length - 1; i >= 0; i--)
+          {
+            stack.push(children[i]);
+          }
+            
+      }
+  }
+  return nodes;
+}
+
+function searchElement(elementhtml, rootData: (HTMLElement | ShadowRoot)[]){
+  var elements = createElementFromHTML(elementhtml)
+  //console.log(elements)
+  var element;
+  if(elements.children.length){
+    for(const current of elements.children){
+      if(current.className.includes("removedElementDetected")){
+        element = current
+      }
+    }
+  }else{
+    element = elements;
+  }
+  //console.log(element)
+  $(element).removeClass("removedElementDetected")
+  var nodeList = []
+  for(const elem of rootData){
+    console.log(elem)
+  }
+  var bodyElements= deepFirstSearch(document.body, nodeList=[], rootData.reverse(), 0)
+  //depthFirstSearch(document.body, <Node>element)
+  //console.log(bodyElements)
+
   return false
-  
   
  }
 
@@ -307,5 +354,5 @@ function searchElement(elementhtml){
   div.innerHTML = htmlString.trim();
 
   // Change this to div.childNodes to support multiple top-level nodes.
-  return div.firstChild;
+  return div;
 }

@@ -1,8 +1,10 @@
 import React from 'react'
+
 import ReactDOM from 'react-dom'
 import './options.scss'
 
-
+const { Fragment } = React;
+var urls;
 const App: React.FC<{}> = () => {
   return (
     <div className='options-container'>
@@ -24,18 +26,16 @@ const App: React.FC<{}> = () => {
               </button>
             </div>
             <div className='list-item'>
-              <button className="button-64" onClick={showBlacklistedElements}>
+              <button className="button-64" onClick={clearLocalStorage}>
                 <span className="text">
                   <img src='./elementDelete.png' width={24} height={24}></img>
-                  SOMETHING ELSE
+                  Clear blacklist
                 </span>
               </button>
             </div>
           </div>
           <div className='data-container'>
-            <div className='data'>
-              Valami
-            </div>
+            <span className='data-item'>{urls}</span>
           </div>
 
         </div>
@@ -52,7 +52,20 @@ var setOfBlacklistedElements;
 function showBlacklistedElements() {
   chrome.storage.sync.get('blockedHTMLElements', function (data) {
     setOfBlacklistedElements = new Set(data.blockedHTMLElements);
+    var props = [];
+    if (setOfBlacklistedElements.values() != undefined) {
+      for (var item of Array.from(setOfBlacklistedElements.values())) {
+        props.push(item['url'])
+      }
+      urls = props.map(function (url) {
+        return (
+          { url }
+        );
+      });
+      console.log(urls)
+    }
   })
+
 }
 
 function clearLocalStorage() {

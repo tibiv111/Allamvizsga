@@ -1,6 +1,6 @@
 {
   "name": "VT-Adblock Extension",
-  "description": "Chrome Extension to block ads!",
+  "description": "Student project Adblock that has NO trackers or any kind of malicious third-party software",
   "version": "1.0.0",
   "manifest_version": 3,
   "icons": {

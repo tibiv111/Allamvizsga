@@ -38,7 +38,7 @@ export default App;
 
 
 
-
+//DOM selector activation for block elements
 var isDOMSelectorActive = false;
 function activateDOMSelector() {
   if (!isDOMSelectorActive) {

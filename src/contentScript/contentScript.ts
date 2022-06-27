@@ -8,10 +8,18 @@ var resultForRequests = [];
 var resultsForCSS = [];
 
 
+//RULES
+function setRulesForCSS(){
+  rules = {
+    'gamecopyworld.com': filterGameCopyWorld,
+    'StandardAdblock': adblockCSS
+    };
+}
 
+//Function to test adblocking on website which does not have ad domains or are hidden.
 async function filterGameCopyWorld() {
   const divs = document.getElementsByTagName('div')
-  const iframes = document.getElementsByTagName('iframe') //iframe-be menti a reklamot
+  const iframes = document.getElementsByTagName('iframe') //iframe ads
   const as = document.getElementsByTagName('a')
   
   for (const div of divs) {
@@ -27,6 +35,7 @@ async function filterGameCopyWorld() {
       }
     }
    
+    //ad videos block specific to this website
     if (
       div.style.display.indexOf('block') != -1 &&
       div.style.zIndex.indexOf('2147483647') != -1
@@ -36,6 +45,7 @@ async function filterGameCopyWorld() {
   }
 }
 
+//block HTML elements if they contain the specific ad domains
 async function adblockCSS(){
   //removeImages() //not working perfectly yet.
   removeLinks()
@@ -65,11 +75,9 @@ function removeLinks(){
   for (var i = 0, l = links.length; i < l; i++) {
     if(links[i].href != null){
       for(var j = 0, max = resultsForCSS.length; j < max; j++){
-        //console.log(resultsForCSS[j])
         if(resultsForCSS[j] != null){
           if(links[i].href.toString().includes(resultsForCSS[j].toString())){
             links[i].style.display = "none"
-            //console.table(resultsForCSS[j])
             break
           }
         }
@@ -95,22 +103,6 @@ function removeElements(){
     }
   }
 }
-
-function searchStringInArray (str, strArray) {
-  for (var j=0; j<strArray.length; j++) {
-      if (strArray[j].match(str)) return j;
-  }
-  return -1;
-}
-
-
-function setRulesForCSS(){
-  rules = {
-    'gamecopyworld.com': filterGameCopyWorld,
-    'StandardAdblock': adblockCSS
-    };
-}
-
 
 function parseServers(responseString, isRequestBlock)
 {
@@ -188,8 +180,9 @@ function DOMSelectorControl(){
   var actualHref = undefined;
   var actualParentHref = undefined;
 
+  //jQuery function on current window -> tab
   jQuery(window).on('mouseover mouseout click',function(e) {
-
+    
     isEditing = false;
     var selectedHTMLElement;
     var wasSelected = false;
@@ -269,17 +262,24 @@ chrome.storage.sync.get('blockedHTMLElements', function(data){
       const currentElement = item["elementData"]
       const rootData : (HTMLElement | ShadowRoot)[] = item['rootData']      
       if(currentElement != null){
-        if(searchElement(currentElement, rootData)){
-          console.log("True")
-        }
+        searchElement(currentElement, rootData)
       }
     }
   }
 })
 
-//DFS for structuring nodes
-function deepFirstSearch(node, nodeList, ItemTrace, currentIndex) {  
-  if(ItemTrace.length <= currentIndex+1)
+
+/*
+  DFS function to structure nodes of DOM and find the path to the blocked element.
+  This is needed because the original selectors do not find all the elements in the DOM.
+  Parameters:
+    node - current node the algorithm is currently on
+    nodeList - DOM tree / array of DOM elements 
+    itemTrace - The blocked elements node path saved in an array *([document.body, .nextNode...]  )
+    currentIndex - currently active node from itemTrace
+*/
+function depthFirstSearchRecursive(node, nodeList, itemTrace, currentIndex) {  
+  if(itemTrace.length <= currentIndex+1)
   {
     return nodeList;
   }
@@ -288,8 +288,8 @@ function deepFirstSearch(node, nodeList, ItemTrace, currentIndex) {
       var children = node.children;
       for (var i = 0; i < children.length; i++) 
       {
-        if(children[i].isEqualNode(ItemTrace[currentIndex])){
-          deepFirstSearch(children[i],nodeList, ItemTrace, currentIndex+1);   
+        if(children[i].isEqualNode(itemTrace[currentIndex])){
+          depthFirstSearchRecursive(children[i],nodeList, itemTrace, currentIndex+1);   
 
         }
          
@@ -303,6 +303,7 @@ function deepFirstSearch(node, nodeList, ItemTrace, currentIndex) {
 } 
 
 
+//DFS non-recursive version
 function depthFirstSearch(node, searchedItem) {
   var nodes = [];
   if (node != null) {
@@ -322,6 +323,7 @@ function depthFirstSearch(node, searchedItem) {
   return nodes;
 }
 
+//Main searching function for finding elements that were previously blocked on the given site
 function searchElement(elementhtml, rootData: (HTMLElement | ShadowRoot)[]){
   var elements = createElementFromHTML(elementhtml)
   //console.log(elements)
@@ -338,12 +340,8 @@ function searchElement(elementhtml, rootData: (HTMLElement | ShadowRoot)[]){
   //console.log(element)
   $(element).removeClass("removedElementDetected")
   var nodeList = []
-  for(const elem of rootData){
-    console.log(elem)
-  }
-  var bodyElements= deepFirstSearch(document.body, nodeList=[], rootData.reverse(), 0)
+  var bodyElements= depthFirstSearchRecursive(document.body, nodeList=[], rootData.reverse(), 0)
   //depthFirstSearch(document.body, <Node>element)
-  //console.log(bodyElements)
 
   return false
   
@@ -355,4 +353,12 @@ function searchElement(elementhtml, rootData: (HTMLElement | ShadowRoot)[]){
 
   // Change this to div.childNodes to support multiple top-level nodes.
   return div;
+}
+
+//Helper functions
+function searchStringInArray (str, strArray) {
+  for (var j=0; j<strArray.length; j++) {
+      if (strArray[j].match(str)) return j;
+  }
+  return -1;
 }

@@ -1,3 +1,5 @@
+
+//When message arrives:
 chrome.runtime.onMessage.addListener((msg, sender, response) =>{
   //API call happens in background when "getAdDomains" message arrives, then sends back the result
   if(msg.name == "getAdDomains"){
@@ -20,38 +22,11 @@ chrome.runtime.onMessage.addListener((msg, sender, response) =>{
 
 chrome.storage.sync.set({"isDOMSelectorActive": false})
 
-
+//storage for blocked html elements has been created
 chrome.storage.sync.get('blockedHTMLElements', function(data){
   if(data.blockedHTMLElements === null){
     var blockedHTMLElementsSet = new Set();
     chrome.storage.sync.set({ 'blockedHTMLElements': [...blockedHTMLElementsSet] });
   }
 })
-
-
-
-
-
-
-// chrome.runtime.onUpdateAvailable.addListener(function() {
-//     console.log('open');
-//   })
-
-//   function forwardRequest(message) {
-//     return new Promise((resolve, reject) => {
-//       chrome.runtime.sendMessage(message, (response) => {
-//         if (!response) return reject(chrome.runtime.lastError)
-//         return resolve(response)
-//       })
-//     })
-//   }
-
-//   chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-//     // sendResponse can be used to send back a result to the content script
-//     fetch(`https://github.com/${request.url}`)
-//          .then((response) => response.json())
-//          .then((codeTourContent) => sendResponse(codeTourContent))
-//     // As we will reply asynchronously to the request, we need to tell chrome to wait for our response
-//     return true
-// })
 

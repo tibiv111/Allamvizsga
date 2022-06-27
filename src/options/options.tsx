@@ -3,7 +3,6 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import './options.scss'
 
-const { Fragment } = React;
 var urls;
 const App: React.FC<{}> = () => {
   return (
@@ -65,7 +64,6 @@ function showBlacklistedElements() {
       console.log(urls)
     }
   })
-
 }
 
 function clearLocalStorage() {

@@ -1,6 +1,6 @@
 {
-  "name": "VT-Adblock Extension",
-  "description": "Student project Adblock that has NO trackers or any kind of malicious third-party software",
+  "name": "VT-Adblock",
+  "description": "Block ads simply!",
   "version": "1.0.0",
   "manifest_version": 3,
   "icons": {
@@ -10,7 +10,7 @@
   },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "React Extension",
+    "default_title": "VT-Adblock",
     "default_icon": "icon.png"
   },
   "permissions": [
